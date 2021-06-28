@@ -1,0 +1,10 @@
+{
+    "btcusdt":{
+        "base":"btc",
+        "term":"usdt"
+    },
+    "usdthusd":{
+        "base":"usdt",
+        "term":"husd"   
+    }
+}
