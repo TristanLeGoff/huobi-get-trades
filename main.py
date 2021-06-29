@@ -7,10 +7,26 @@ import base64
 from urllib.parse import urlencode
 import pandas as pd
 import time
+import sys
 
 with open('pairData.json') as json_file:
     pairData = json.load(json_file)
+
 finalCsv = []
+if (len(sys.argv)>2) :
+    start = sys.argv[1]
+    start = int(time.mktime(datetime.strptime(start, "%d/%m/%Y-%H:%M").timetuple())*1000)
+    end = sys.argv[2]
+    end = int(time.mktime(datetime.strptime(end, "%d/%m/%Y-%H:%M").timetuple())*1000)
+elif(len(sys.argv)>1):
+    start = sys.argv[1]
+    start = int(time.mktime(datetime.strptime(start, "%d/%m/%Y-%H:%M").timetuple())*1000)
+    end = start+172800000
+else:
+    start = ''
+    end = ''
+
+print(start, end)
 for pair in pairData:
     #Get all Accounts of the Current User
     AccessKeyId = ''
@@ -20,17 +36,17 @@ for pair in pairData:
                         'SignatureMethod': 'HmacSHA256',
                         'SignatureVersion': '2',
                         'Timestamp': timestamp,
-                        'symbol':pair
+                        'end-time':end,
+                        'start-time':start,
+                        'symbol':pair   
                     })
     method = 'GET'
     endpoint = '/v1/order/matchresults'
     base_uri = 'api-aws.huobi.pro'
     pre_signed_text = method + '\n' + base_uri + '\n' + endpoint + '\n' + params
-    # print(pre_signed_text)
     hash_code = hmac.new(SecretKey.encode(), pre_signed_text.encode(), hashlib.sha256).digest()
     signature = urlencode({'Signature': base64.b64encode(hash_code).decode()})
     url = 'https://' + base_uri + endpoint + '?' + params + '&' + signature
-    # print(url)
     response = requests.request(method, url)
     # print(response.json())
     dtest = pd.DataFrame(data=response.json()['data'])
